@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col,round,countDistinct
 spark=SparkSession.builder.appName("BmiCalculator").getOrCreate()
 
-sourceDataDF=spark.read.format("json").load("data/patientSourceData.json")
+sourceDataDF=spark.read.format("json").load("IdeaProjects/bmiCalculator/data/patientSourceData.json")
 
 sourceDataDF.withColumn("bmi",round(col("WeightKg")/(col("HeightCm")*0.01),1)).where("HeightCm > 0 AND WeightKg > 0").createOrReplaceTempView("patientsrcdata")
 
@@ -26,10 +26,11 @@ transformedDataDF=spark.sql("SELECT Gender, HeightCm, WeightKg,bmi `BMI (Body Ma
 
           "FROM patientsrcdata WHERE HeightCm != 0 AND WeightKg != 0")
 
-transformedDataDF.write.option("header", "true").partitionBy("BMI Category").mode("overwrite").format("com.databricks.spark.csv").save("out/transformedData")
+transformedDataDF.write.option("header", "true").partitionBy("BMI Category").mode("overwrite").format("com.databricks.spark.csv").save("IdeaProjects/bmiCalculator/out/transformedData")
 
-OverweightDF=spark.read.option("header","true").csv("out/transformedData/").where("`BMI Category` = 'Overweight' ")
+OverweightDF=spark.read.option("header","true").csv("IdeaProjects/bmiCalculator/out/transformedData/").where("`BMI Category` = 'Overweight' ")
 
 countresult=[{'Total Number of Overweight People': OverweightDF.count()}]
-spark.createDataFrame(countresult).coalesce(1).write.option("header", "true").mode("overwrite").format("com.databricks.spark.csv").save("out/finalOutput")
+spark.createDataFrame(countresult).coalesce(1).write.option("header", "true").mode("overwrite").format("com.databricks.spark.csv").save("IdeaProjects/bmiCalculator/out/finalOutput")
+
 spark.catalog.dropTempView("patientsrcdata")
