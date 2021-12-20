@@ -12,7 +12,7 @@ class BMIUnitTest(unittest.TestCase):
         input_path = self.input_path
         output_path = self.output_path
         calculateObeseCount(input_path,output_path)
-        expectedresultcount = 3
+        expectedresultcount = 2
         actualresultcount = int(spark.read.option("header", "true").csv(output_path+"/finalOutput").rdd.map(list).collect()[0][0])
         self.assertEqual(expectedresultcount, actualresultcount)
 
