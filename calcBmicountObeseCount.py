@@ -3,12 +3,13 @@ from pyspark.sql.functions import col,round,countDistinct
 import sys, logging, traceback
 
 logging.basicConfig(level=logging.INFO)
-
+class bmiAppFailed(Exception):
+    pass
 def calculateObeseCount(input_path,output_path):
     try:
         spark=SparkSession.builder.appName("BmiCalculator").getOrCreate()
         sourceDataDF=spark.read.format("json").load(input_path)
-        sourceDataDF.withColumn("bmi",round(col("WeightKg")/(col("HeightCm")*0.01),1)).where("HeightCm > 0 AND WeightKg > 0").createOrReplaceTempView("patientsrcdata")
+        sourceDataDF.repartition(200).withColumn("bmi",round(col("WeightKg")/(col("HeightCm")*0.01),1)).where("HeightCm > 0 AND WeightKg > 0").createOrReplaceTempView("patientsrcdata")
         transformedDataDF=spark.sql("SELECT Gender, HeightCm, WeightKg,bmi `BMI (Body Mass Index)`, " +
 
           "CASE WHEN bmi <= 18.4 THEN 'Underweight' " +
@@ -39,6 +40,7 @@ def calculateObeseCount(input_path,output_path):
         traceback.print_exc(300)
         print(e)
         logging.info("***************BMI Calculation Failed*******************")
+        raise bmiAppFailed
 
 if __name__ == '__main__':
     input_path=sys.argv[1]
