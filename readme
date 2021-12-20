@@ -3,3 +3,5 @@
 3) Used python unittest module to read test data and assert the expected output
 4) Parameterized the input and output path
 5) AUTOMATED the trigger of git checkout, Unit Test execution, Build and Execute by using Jenkins locally. Refer the Jenkinsfile for script.
+6) Proper console logging and custom exception handling is done.
+7) Filtered BAD data i.e. Height and Weight <=0 are excluded
